@@ -25,6 +25,7 @@ understand the order of events.
 ```python
 from logseg import get_logger
 logger = get_logger(__name__)
+
 folder_name = 'log-folder-name'
 logger.info(f'LOGSEG({folder_name}) Your message')
 ```
@@ -44,6 +45,7 @@ logger_manager: LoggerManager = logger_init()
 
 ```python
 from logseg import get_logger
+
 logger = get_logger(__name__)
 logger.info('Your message')
 ```
