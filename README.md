@@ -13,8 +13,6 @@ pip install logseg
 
 ## Usage
 
-### LOGSEG Log Segmentation
-
 Prepend a `LOGEG(folder-name)` to your log messages to segregate your logs into different folders.
 This is particularly useful when you have multiple processes writing logs simultaneously and you
 want to make them easier to read.
@@ -81,3 +79,31 @@ Close the logger using the LoggerManager returned from logger_init() during setu
 ```python
 logger_manager.terminate_logger()
 ```
+
+### Customization Options
+
+You can customize the following settings with environment variables:
+
+_Log Directory_
+
+The directory to store the log files.
+
+`LOGSEG_LOG_DIR = logs`
+
+_Max Bytes_
+
+How many bytes to allow in a single log file before creating a new one.
+
+`LOGSEG_MAX_BYTES = 10000000`
+
+_Backup Count_
+
+How many log files to keep before deleting the oldest.
+
+`LOGSEG_BACKUP_COUNT = 6`
+
+_Pre Purge_
+
+Whether to purge the log directory on startup.
+
+`LOGSEG_PRE_PURGE = true`
