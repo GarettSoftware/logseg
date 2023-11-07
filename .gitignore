@@ -17,3 +17,9 @@ tests/data
 
 # Docs
 docs/build
+
+# Build
+dist
+
+# Release
+logseg.egg-info
