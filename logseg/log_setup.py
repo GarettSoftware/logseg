@@ -7,11 +7,11 @@ import logseg.globals
 
 import logging.handlers
 
-from logging import Logger
-
 from threading import Thread
 
 from typing import Optional, Tuple
+
+from logging import Logger, Formatter
 
 from configparser import ConfigParser
 
@@ -25,11 +25,21 @@ from logseg.utils import create_dir_if_not_exists, delete_dir_contents_if_exists
 class LoggerManager:
 
     def __init__(self, logger_thread: Thread):
+        """
+        This class manages the logger thread.
+
+        Args:
+            logger_thread: The logger thread to manage.
+
+        Returns:
+
+        """
         self.logger_thread = logger_thread
 
     def terminate_logger(self):
         """
         This method terminates the logger thread. It should be called when log is complete during program cleanup.
+
         Returns:
 
         """
@@ -49,16 +59,32 @@ class LoggerManager:
 
 
 class RedirectToLogger(object):
-    """
-    Used to redirect stdout and stderr to logger in _redirect_stdout_stderr
-    """
 
     def __init__(self, logger, log_level=logging.INFO):
+        """
+        Used to redirect stdout and stderr to logger in _redirect_stdout_stderr
+
+        Args:
+            logger: The logger instance to redirect to.
+            log_level: The log level to use for the logger.
+
+        Returns:
+
+        """
         self.logger = logger
         self.log_level = log_level
         self.value = None
 
     def write(self, message):
+        """
+        This method writes a message to the logger instance.
+
+        Args:
+            message: The message to write to the logger instance.
+
+        Returns:
+
+        """
         self.value = message
         for line in message.rstrip().splitlines():
             self.logger.log(self.log_level, line.rstrip())
@@ -73,6 +99,15 @@ class RedirectToLogger(object):
 class CreateFileHandlerHandler(logging.Handler):
 
     def __init__(self, config: ConfigParser):
+        """
+        This class creates a file handler for a logger instance.
+
+        Args:
+            config: A ConfigParser containing the logger configuration.
+
+        Returns:
+
+        """
         super().__init__()
         self.config = config
 
@@ -82,10 +117,12 @@ class CreateFileHandlerHandler(logging.Handler):
     def _process_logseg(self, log_str: str) -> Tuple[str, str]:
         """
         This method processes a logseg log record.
+
         Args:
             log_str: The log string to be processed.
 
-        Returns: A Tuple containing the final message and the segregate folder name for the log string.
+        Returns:
+            A Tuple containing the final message and the segregate folder name for the log string.
 
         """
         segregate_folder_name = None
@@ -102,7 +139,13 @@ class CreateFileHandlerHandler(logging.Handler):
 
     def emit(self, record):
         """
-        Create a file handler, attached to the logger instance.
+        This method emits a log record to the logger instance.
+
+        Args:
+            record: The log record to emit.
+
+        Returns:
+
         """
         try:
             # Handle logging to separate file, if requested:
@@ -132,14 +175,20 @@ class CreateFileHandlerHandler(logging.Handler):
             self.handleError(record)
 
 
-def _add_file_handler(config: ConfigParser, instance, log_formatter, folder_name: Optional[str] = None):
+def _add_file_handler(
+        config: ConfigParser,
+        instance: Logger,
+        log_formatter: Formatter,
+        folder_name: Optional[str] = None
+) -> None:
     """
+    This function adds a file handler to a logger instance.
 
     Args:
         config: A ConfigParser containing the logger configuration.
-        instance:
-        log_formatter:
-        folder_name:
+        instance: The logger instance to add the file handler to.
+        log_formatter: The log formatter to use for the file handler.
+        folder_name: The name of the folder to segregate logs into.
 
     Returns:
 
@@ -166,6 +215,12 @@ def _add_file_handler(config: ConfigParser, instance, log_formatter, folder_name
 
 
 def _get_log_formatter():
+    """
+    This function gets the log formatter.
+
+    Returns:
+
+    """
     # Define the formatter.
     formatter = logging.Formatter("%(asctime)s: %(levelname)7s > %(message)s")
     formatter.converter = time.gmtime
@@ -175,6 +230,7 @@ def _get_log_formatter():
 def _get_root_logger():
     """
     This function gets the root logger and sets its level.
+
     Returns:
 
     """
@@ -186,6 +242,10 @@ def _get_root_logger():
 def _redirect_stdout_stderr(logger: Logger) -> None:
     """
     This function redirects the standard out and standard error to logger instances.
+
+    Args:
+        logger: The logger instance to redirect stdout and stderr to.
+
     Returns:
 
     """
@@ -199,6 +259,17 @@ def _redirect_stdout_stderr(logger: Logger) -> None:
 
 
 def _configure_logging_handlers(config: ConfigParser) -> Logger:
+    """
+    This function configures the logging handlers for the logger instance.
+
+    Args:
+        config: A ConfigParser containing the logger configuration.
+
+    Returns:
+        A Logger instance.
+
+    """
+
     # Get the root logger.
     root = _get_root_logger()
 
@@ -226,6 +297,7 @@ def _configure_logging_handlers(config: ConfigParser) -> Logger:
 def _lt(queue: Queue):
     """
     This function acts as the thread that listens to the logger queue and sends queued logs to the logger instance.
+
     Args:
         queue: A multiprocessing Queue, managed my a multiprocessing Manager.
 
@@ -245,7 +317,8 @@ def logger_init() -> LoggerManager:
     This function initializes a logger as well as a thread to process logs produced by concurrent processes. Logs
     from concurrent processes should be passed through the multiprocessing queue stored in log.globals.logger_queue.
 
-    Returns: A LoggerManager instance which can be used to terminate the logger thread at cleanup time.
+    Returns:
+        A LoggerManager instance which can be used to terminate the logger thread at cleanup time.
 
     """
     config = get_config()
