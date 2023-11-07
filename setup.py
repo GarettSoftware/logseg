@@ -19,7 +19,12 @@ setup(
             "myst_parser>=2.0.0",
             "sphinx-autoapi>=2.1.1",
             "sphinx-autobuild>=2021.3.14",
-        ]
+        ],
+        "build": [
+            "wheel",
+            "setuptools",
+            "twine",
+        ],
     },
     python_requires=">=3.8.0",
     keywords="logging, multiprocessing, log segmentation, log rotation",
