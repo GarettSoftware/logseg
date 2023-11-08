@@ -1,5 +1,9 @@
 import os
 
+from pathlib import Path
+
+from typing import Union
+
 from configparser import ConfigParser
 
 
@@ -15,24 +19,50 @@ def _override_config(config: ConfigParser) -> ConfigParser:
 
     """
     if 'LOGSEG_LOG_DIR' in os.environ:
-        config['Logger']['log_dir'] = os.environ['LOGSEG_LOG_DIR']
+        config['LOGSEG']['log_dir'] = os.environ['LOGSEG_LOG_DIR']
     if 'LOGSEG_MAX_BYTES' in os.environ:
-        config['Logger']['max_bytes'] = os.environ['LOGSEG_MAX_BYTES']
+        config['LOGSEG']['max_bytes'] = os.environ['LOGSEG_MAX_BYTES']
     if 'LOGSEG_BACKUP_COUNT' in os.environ:
-        config['Logger']['backup_count'] = os.environ['LOGSEG_BACKUP_COUNT']
+        config['LOGSEG']['backup_count'] = os.environ['LOGSEG_BACKUP_COUNT']
     if 'LOGSEG_PRE_PURGE' in os.environ:
-        config['Logger']['pre_purge'] = os.environ['LOGSEG_PRE_PURGE']
+        config['LOGSEG']['pre_purge'] = os.environ['LOGSEG_PRE_PURGE']
 
     return config
 
 
-def get_config() -> ConfigParser:
+def _default_config() -> ConfigParser:
     """
-    Determine and load the correct config file based on environment variables.
+    This function generates a default configuration file.
+
+    Returns:
+        A ConfigParser instance with default configurations.
     """
     config = ConfigParser()
+    config.add_section('LOGSEG')
+    config.set('LOGSEG', 'log_dir', 'logs')
+    config.set('LOGSEG', 'max_bytes', '10000000')
+    config.set('LOGSEG', 'backup_count', '6')
+    config.set('LOGSEG', 'pre_purge', 'true')
+    return config
 
-    config.read('logseg/configurations/conf.config')
+
+def get_config(config_file: Union[Path, str] = None) -> ConfigParser:
+    """
+    Determine and load the correct config file based on environment variables.
+
+    Args:
+        config_file: The path to the config file.
+
+    Returns:
+        A ConfigParser instance with the logger configuration.
+
+    """
+    config = _default_config()
+
+    if config_file is not None:
+        if not os.path.exists(config_file):
+            raise FileNotFoundError(f"Config file {config_file} not found.")
+        config.read(config_file)
 
     config = _override_config(config)
 
