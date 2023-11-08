@@ -408,7 +408,7 @@ def get_logger(name: str, queue: Optional[Queue] = None) -> Logger:
 
         # Clean up handlers.
         for handler in root.handlers:
-            handler.close()
+            handler.flush()
             root.removeHandler(handler)
 
         # Add the handler if it doesn't already exist.
