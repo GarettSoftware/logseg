@@ -37,8 +37,6 @@ class TestLogger(TestCase):
 
         _multiprocessing_logger_and_redirects_helper(sequential_logger)
 
-        time.sleep(1)
-
         # Run assertions on log files.
         with open('tests/data/logs/thread_1/logs.log', 'r') as f:
             content = f.readlines()
