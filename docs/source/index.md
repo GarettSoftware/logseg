@@ -7,7 +7,10 @@
 :relative-images:
 ```
 
-## Contents
 ```{toctree}
+:caption: Development
+:hidden:
 :maxdepth: 2
+
+GitHub Repository <https://github.com/GarettSoftware/logseg>
 ```
