@@ -406,10 +406,6 @@ def get_logger(name: str, queue: Optional[Queue] = None) -> Logger:
         # Redirect stdout of this process to the logger instance
         _redirect_stdout_stderr(logger)
 
-        # Remove existing handlers.
-        for handler in root.handlers:
-            root.removeHandler(handler)
-
         # Add the handler if it doesn't already exist.
         if queue_handler.name not in [x.name for x in root.handlers]:
             # Add the queue handler.
