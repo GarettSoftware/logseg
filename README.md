@@ -17,8 +17,8 @@ pip install logseg
 
 ## Usage
 
-Prepend a `LOGEG(folder-name)` to your log messages to segregate your logs into different folders.
-This is particularly useful when you have multiple processes writing logs simultaneously and you
+Prepend a `LOGEG(folder-name)` if you want to segregate your logs into different folders.
+This is particularly useful when you have multiple processes writing logs simultaneously, and you
 want to make them easier to read.
 
 Don't worry, all the logs will still be written to a root-level log file so that you can still
@@ -86,7 +86,31 @@ logger_manager.terminate_logger()
 
 ### Customization Options
 
-You can customize the following settings with environment variables:
+#### Config File
+
+You can pass `logger_init()` a path to a config file.
+
+```python
+from logseg import LoggerManager
+from logseg import logger_init
+
+logger_manager: LoggerManager = logger_init(config_file='path/to/my_configuration.config')
+```
+
+The config file should be a `.config` file. Here is a complete example:
+
+```config
+[LOGSEG]
+log_dir = logs
+max_bytes = 10000000
+backup_count = 6
+pre_purge = true
+```
+
+#### Environment Variable Overrides
+
+You can override the default config or your custom config on a per-environment basis with the following
+environment variables.
 
 _Log Directory_
 
