@@ -20,7 +20,7 @@ setup(
     author=metadata.get("AUTHOR"),
     author_email="garettsoftware@gmail.com",
     license="MIT",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests", "tests.*"]),
     install_requires=[],
     extras_require={
         "docs": [
