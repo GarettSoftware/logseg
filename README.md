@@ -7,6 +7,8 @@ pass a multiprocessing queue to each process that intends to use logging.
 
 ## Installation
 
+https://pypi.org/project/logseg/
+
 ```bash
 pip install logseg
 ```
