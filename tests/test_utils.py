@@ -18,10 +18,7 @@ def common_test_setup():
 def common_test_teardown():
     # Change folder permissions and delete the directory.
     os.chmod('tests/data', stat.S_IWUSR)
-    try:
-        shutil.rmtree('tests/data')
-    except PermissionError as e:
-        print(e)
+    shutil.rmtree('tests/data')
 
 
 def common_test_setup_w_logger() -> LoggerManager:
