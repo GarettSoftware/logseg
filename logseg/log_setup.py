@@ -406,7 +406,7 @@ def get_logger(name: str, queue: Optional[Queue] = None) -> Logger:
         # Redirect stdout of this process to the logger instance
         _redirect_stdout_stderr(logger)
 
-        # Clean up handlers.
+        # Clean up existing handlers on the root logger if they exist.
         for handler in root.handlers:
             handler.close()
             root.removeHandler(handler)
