@@ -7,13 +7,15 @@ import logseg.globals
 
 import logging.handlers
 
-from threading import Thread
+from pathlib import Path
 
-from typing import Optional, Tuple
+from threading import Thread
 
 from logging import Logger, Formatter
 
 from configparser import ConfigParser
+
+from typing import Optional, Tuple, Union
 
 from logseg.configurations.config import get_config
 
@@ -196,7 +198,7 @@ def _add_file_handler(
     # If the file handler doesn't already exist, create it.
     if not folder_name or folder_name and folder_name not in [x.name for x in instance.handlers]:
         # Create the directory for the logs if necessary.
-        base_log_path = config.get('Logger', 'log_dir')
+        base_log_path = config.get('LOGSEG', 'log_dir')
         if folder_name:
             log_path = f'{base_log_path}/{folder_name}'
         else:
@@ -204,9 +206,11 @@ def _add_file_handler(
         create_dir_if_not_exists(log_path)
 
         # Define the file handler.
-        file_handler = logging.handlers.RotatingFileHandler(f"{log_path}/logs.log",
-                                                            maxBytes=config.getint('Logger', 'max_bytes'),
-                                                            backupCount=config.getint('Logger', 'backup_count'))
+        file_handler = logging.handlers.RotatingFileHandler(
+            f"{log_path}/logs.log",
+            maxBytes=config.getint('LOGSEG', 'max_bytes'),
+            backupCount=config.getint('LOGSEG', 'backup_count')
+        )
         file_handler.set_name(folder_name)
 
         # Add the file handler.
@@ -312,21 +316,25 @@ def _lt(queue: Queue):
         logger.handle(record)
 
 
-def logger_init() -> LoggerManager:
+def logger_init(config_file: Union[Path, str] = None) -> LoggerManager:
     """
     This function initializes a logger as well as a thread to process logs produced by concurrent processes. Logs
     from concurrent processes should be passed through the multiprocessing queue stored in log.globals.logger_queue.
+
+    Args:
+        config_file: A path to a configuration file containing a LOGSEG section. If not provided, the default
+        configuration will be used. See the documentation for an example configuration file.
 
     Returns:
         A LoggerManager instance which can be used to terminate the logger thread at cleanup time.
 
     """
-    config = get_config()
+    config = get_config(config_file=config_file)
 
-    logger_dir = config.get('Logger', 'log_dir')
+    logger_dir = config.get('LOGSEG', 'log_dir')
 
     # Delete the directory contents if the config specifies to do so.
-    if config.getboolean('Logger', 'pre_purge'):
+    if config.getboolean('LOGSEG', 'pre_purge'):
         # Note that we don't delete the directory itself since it might be volume mounted (for argo workflows).
         delete_dir_contents_if_exists(logger_dir)
 
