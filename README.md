@@ -86,6 +86,8 @@ logger_manager.terminate_logger()
 
 ### Customization Options
 
+You can customize the logger in two different ways.
+
 #### Config File
 
 You can pass `logger_init()` a path to a config file.
