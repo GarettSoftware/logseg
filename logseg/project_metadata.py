@@ -2,7 +2,7 @@ NAME = "logseg"
 
 AUTHOR = "Garett MacGowan"
 
-VERSION = "0.1.5"
+VERSION = "0.1.6"
 
 DESCRIPTION = (
     "Python logging for multi-process and multi-threaded applications."
