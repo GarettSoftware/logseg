@@ -1,5 +1,7 @@
 # LOGSEG
 
+![example workflow](https://github.com/GarettSoftware/logseg/actions/workflows/ci.yml/badge.svg)
+
 A Multiprocessing focused Python logger with easy-to-use log file segmentation for a better multiprocessing logging experience.
 
 This logger is specifically designed to be compatible with Unix and Windows. It requires you to explicitly
