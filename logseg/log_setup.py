@@ -356,47 +356,48 @@ def get_logger(name: str, queue: Optional[Queue] = None) -> Logger:
 
     Usage:
 
-        1) Call logger_init() and keep the LoggerManager for the life of the program.
+    1) Call logger_init() and keep the LoggerManager for the life of the program.
 
-        2) Import get_logger(__name__) wherever you want to use the logger.
+    2) Import get_logger(__name__) wherever you want to use the logger.
 
-        3) Use the logger, logger.info('your message')
+    3) Use the logger, logger.info('your message')
 
-        4) When using multiprocessing...
-            ```
-            import log.globals
-            ```
+    4) When using multiprocessing...
 
-            Pass log.globals.logger_queue as a parameter to the multiprocessing function explicitly
-            (needed due to process spawning on Windows OS).
+        ```
+        import log.globals
+        ```
 
-            e.g.
-            ```
-            pool = mp.Pool(processes=mp.cpu_count())
-            pool.imap_unordered(func=partial(
-                my_function,
-                queue=log.globals.logger_queue,
-                parameters=parameters
-            ))
-            pool.close()
-            pool.join()
-            ```
+        Pass log.globals.logger_queue as a parameter to the multiprocessing function explicitly
+        (needed due to process spawning on Windows OS).
 
-            Set up a logger instance from within the function that multiprocessing is being applied to. It will
-            communicate with the root logger using the queue.
+        e.g.
+        ```
+        pool = mp.Pool(processes=mp.cpu_count())
+        pool.imap_unordered(func=partial(
+            my_function,
+            queue=log.globals.logger_queue,
+            parameters=parameters
+        ))
+        pool.close()
+        pool.join()
+        ```
 
-            e.g.
-            ```
-            def my_function(queue, parameters):
-                multiprocessing_logger = get_logger(__name__, queue=queue)
-                multiprocessing_logger.info('testing logger in multiprocessing')
-            ```
+        Set up a logger instance from within the function that multiprocessing is being applied to. It will
+        communicate with the root logger using the queue.
 
-        5) When you are finished logging, close the logger using the LoggerManager returned from logger_init() (step 1)
-            e.g.
-            ```
-            logger_manager.terminate_logger()
-            ```
+        e.g.
+        ```
+        def my_function(queue, parameters):
+            multiprocessing_logger = get_logger(__name__, queue=queue)
+            multiprocessing_logger.info('testing logger in multiprocessing')
+        ```
+
+    5) When you are finished logging, close the logger using the LoggerManager returned from logger_init() (step 1)
+        e.g.
+        ```
+        logger_manager.terminate_logger()
+        ```
 
     Args:
         name: The name for the logger.
