@@ -7,7 +7,7 @@
 
 2) Run a local docs server
    ```
-   sphinx-autobuild docs/source/ docs/build/html
+   sphinx-autobuild docs/source/ docs/build/html --watch logseg
    ```
 
 ### Manual Build
