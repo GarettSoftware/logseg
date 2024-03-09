@@ -1,11 +1,24 @@
 # LOGSEG
 
-![example workflow](https://github.com/GarettSoftware/logseg/actions/workflows/ci.yml/badge.svg)
+![](https://github.com/GarettSoftware/logseg/actions/workflows/ci.yml/badge.svg)
 
-A Multiprocessing focused Python logger with easy-to-use log file segmentation for a better multiprocessing logging experience.
+A Multiprocessing capable Python logger with easy per-log file segmentation.
 
-This logger is specifically designed to be compatible with Unix and Windows. It requires you to explicitly
-pass a multiprocessing queue to each process that intends to use logging.
+```python
+from logseg import get_logger, logger_init
+
+logger_manager = logger_init()
+logger = get_logger(__name__)
+
+logger.info(f'LOGSEG(folder_name) My log')
+
+logger_manager.terminate_logger()
+```
+
+This logger is specifically designed to be compatible with Unix and Windows.
+
+For full setup and configuration instructions, see below or read the 
+[documentation](https://logseg.readthedocs.io/en/latest/).
 
 ## Installation
 
@@ -16,21 +29,6 @@ pip install logseg
 ```
 
 ## Usage
-
-Prepend a `LOGEG(folder-name)` if you want to segregate your logs into different folders.
-This is particularly useful when you have multiple processes writing logs simultaneously, and you
-want to make them easier to read.
-
-Don't worry, all the logs will still be written to a root-level log file so that you can still
-understand the order of events.
-
-```python
-from logseg import get_logger
-logger = get_logger(__name__)
-
-folder_name = 'log-folder-name'
-logger.info(f'LOGSEG({folder_name}) Your message')
-```
 
 ### Setup
 
@@ -74,6 +72,22 @@ pool.imap_unordered(func=partial(
 
 pool.close()
 pool.join()
+```
+
+### Log Segregation
+
+Prepend a `LOGEG(folder-name)` if you want to segregate your logs into different folders.
+This is particularly useful when you have multiple processes writing logs simultaneously, and you
+want to make them easier to read.
+
+Don't worry, all the logs will still be written to a root-level log file so that you can still
+understand the order of events.
+
+```python
+from logseg import get_logger
+logger = get_logger(__name__)
+
+logger.info(f'LOGSEG(folder-name) My log')
 ```
 
 ### Clean Up
