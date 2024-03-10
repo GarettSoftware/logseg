@@ -29,6 +29,39 @@ class TestLogger(TestCase):
     def tearDown(self) -> None:
         common_test_teardown_w_logger(logger_manager=self.logger_manager)
 
+    def test_logger(self):
+        self.logger_manager = common_test_setup_w_logger()
+
+        logger = get_logger(__name__)
+
+        logger.info('test log')
+
+        time.sleep(1)
+
+        with open('tests/data/logs/logs.log', 'r') as f:
+            content = f.readlines()
+            content_len = len(content)
+            assert content_len == 1, f"Only 1 log should be in log file. Found {content_len}.\n{content}"
+            assert 'INFO > test log\n' in content[0], f"Log content is not as expected.\n{content}"
+
+    def test_logger_exception(self):
+        self.logger_manager = common_test_setup_w_logger()
+
+        logger = get_logger(__name__)
+
+        try:
+            raise Exception('Test exception')
+        except Exception as e:
+            logger.exception(e)
+
+        time.sleep(1)
+
+        with open('tests/data/logs/logs.log', 'r') as f:
+            content = f.readlines()
+            content_len = len(content)
+            assert content_len == 5, f"Only 5 logs should be in log file. Found {content_len}.\n{content}"
+            assert 'ERROR > Test exception\n' in content[0], f"Log content is not as expected.\n{content}"
+
     def test_multiprocessing_logger_and_redirects(self):
         self.logger_manager = common_test_setup_w_logger()
 
