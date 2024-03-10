@@ -153,13 +153,17 @@ class CreateFileHandlerHandler(logging.Handler):
             # Handle logging to separate file, if requested:
             segregate_folder_name = None
 
+            '''
+            Note that for the two cases below, we check if the record is a string because it could be an exception 
+            instance. If it is an exception, we know it doesn't contain a LOGSEG() substring.
+            '''
+
             # Handle message property
-            if hasattr(record, 'message'):
+            if hasattr(record, 'message') and isinstance(record.message, str):
                 record.message, name = self._process_logseg(record.message)
                 segregate_folder_name = name if name else segregate_folder_name
-
             # Handle msg property
-            if hasattr(record, 'msg'):
+            if hasattr(record, 'msg') and isinstance(record.msg, str):
                 record.msg, name = self._process_logseg(record.msg)
                 segregate_folder_name = name if name else segregate_folder_name
 
