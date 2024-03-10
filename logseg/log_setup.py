@@ -89,6 +89,7 @@ class RedirectToLogger(object):
         """
         self.value = message
         for line in message.rstrip().splitlines():
+            line = line.encode('utf-8', errors='replace')
             self.logger.log(self.log_level, line.rstrip())
 
     def flush(self):
