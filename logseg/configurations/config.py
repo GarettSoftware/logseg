@@ -26,6 +26,8 @@ def _override_config(config: ConfigParser) -> ConfigParser:
         config['LOGSEG']['backup_count'] = os.environ['LOGSEG_BACKUP_COUNT']
     if 'LOGSEG_PRE_PURGE' in os.environ:
         config['LOGSEG']['pre_purge'] = os.environ['LOGSEG_PRE_PURGE']
+    if 'LOGSEG_TIMEZONE' in os.environ:
+        config['LOGSEG']['timezone'] = os.environ['LOGSEG_TIMEZONE']
 
     return config
 
@@ -43,6 +45,7 @@ def _default_config() -> ConfigParser:
     config.set('LOGSEG', 'max_bytes', '10000000')
     config.set('LOGSEG', 'backup_count', '6')
     config.set('LOGSEG', 'pre_purge', 'true')
+    config.set('LOGSEG', 'timezone', 'UTC')
     return config
 
 

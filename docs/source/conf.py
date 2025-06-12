@@ -15,7 +15,7 @@ from logseg.project_metadata import NAME, VERSION, AUTHOR  # noqa: E402
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = NAME
-copyright = f'2023, {AUTHOR}'
+copyright = f'2025, {AUTHOR}'
 author = AUTHOR
 release = VERSION
 

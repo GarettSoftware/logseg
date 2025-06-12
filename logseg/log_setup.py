@@ -1,6 +1,5 @@
 import re
 import sys
-import time
 import logging
 
 import logseg.globals
@@ -10,6 +9,10 @@ import logging.handlers
 from pathlib import Path
 
 from threading import Thread
+
+from datetime import datetime
+
+from zoneinfo import ZoneInfo
 
 from logging import Logger, Formatter
 
@@ -173,8 +176,12 @@ class CreateFileHandlerHandler(logging.Handler):
                 # Don't propagate to the root logger, this would cause infinite recursion.
                 logger.propagate = False
                 # Add a file handler to the logger instance for the segregate folder.
-                _add_file_handler(config=self.config, instance=logger, log_formatter=_get_log_formatter(),
-                                  folder_name=segregate_folder_name)
+                _add_file_handler(
+                    config=self.config,
+                    instance=logger,
+                    log_formatter=_get_log_formatter(self.config),
+                    folder_name=segregate_folder_name
+                )
                 logger.handle(record)
         except RecursionError:
             raise
@@ -223,16 +230,33 @@ def _add_file_handler(
         instance.addHandler(file_handler)
 
 
-def _get_log_formatter():
+def _get_log_formatter(config: ConfigParser):
     """
-    This function gets the log formatter.
+    This function gets the log formatter with timezone support.
+
+    Args:
+        config: A ConfigParser containing the logger configuration.
 
     Returns:
-
+        A logging.Formatter instance with timezone support.
     """
-    # Define the formatter.
-    formatter = logging.Formatter("%(asctime)s: %(levelname)7s > %(message)s")
-    formatter.converter = time.gmtime
+
+    timezone = config.get('LOGSEG', 'timezone')
+
+    class TZFormatter(logging.Formatter):
+        def __init__(self, fmt=None, datefmt=None, tz=None):
+            super().__init__(fmt, datefmt)
+            self.tz = ZoneInfo(tz)
+
+        def formatTime(self, record, datefmt=None):
+            dt = datetime.fromtimestamp(record.created, self.tz)
+            if datefmt:
+                s = dt.strftime(datefmt)
+            else:
+                s = dt.strftime('%Y-%m-%d %H:%M:%S.%f')
+            return s
+
+    formatter = TZFormatter("%(asctime)s: %(levelname)7s > %(message)s", tz=timezone)
     return formatter
 
 
@@ -283,7 +307,7 @@ def _configure_logging_handlers(config: ConfigParser) -> Logger:
     root = _get_root_logger()
 
     # Define the formatter.
-    log_formatter = _get_log_formatter()
+    log_formatter = _get_log_formatter(config)
 
     # Add the file handler
     _add_file_handler(config, root, log_formatter)

@@ -1,6 +1,7 @@
 import os
 import time
 import datetime
+import tracemalloc
 
 import logseg.globals
 
@@ -13,10 +14,11 @@ from unittest import TestCase
 import multiprocessing as mp
 from multiprocessing import Queue
 
+from zoneinfo import ZoneInfo
+
 from logseg.log_setup import get_logger, logger_init
 
 from tests.test_utils import common_test_setup, common_test_setup_w_logger, common_test_teardown_w_logger
-
 
 os.environ['LOGSEG_LOG_DIR'] = 'tests/data/logs'
 
@@ -107,6 +109,78 @@ class TestLogger(TestCase):
             content_len = len(content)
             assert content_len == 1, f'Only one log should be in log file. Found {content_len}.\n{content}'
 
+    def test_memory_usage_doesnt_explode(self):
+        """
+        This test ensures that repeatedly logging messages does not cause
+        a runaway increase in Python memory allocations.
+        """
+        self.logger_manager = common_test_setup_w_logger()
+        logger = get_logger(__name__)
+
+        # Start tracking memory allocations.
+        tracemalloc.start()
+        initial_current, _ = tracemalloc.get_traced_memory()
+
+        num_logs = 100000
+        check_interval = 10000  # Check memory usage every 10,000 logs
+        allowed_increase = 10 * 1024 * 1024  # 10 MB in bytes
+
+        for i in range(num_logs):
+            logger.info(f"Memory usage test log: {i}")
+            if i % check_interval == 0 and i != 0:
+                current_memory, _ = tracemalloc.get_traced_memory()
+                memory_increase = current_memory - initial_current
+                self.assertTrue(
+                    memory_increase < allowed_increase,
+                    f"Memory usage increased by {memory_increase} bytes after {i} logs, which exceeds the allowed threshold."
+                )
+
+        # Allow time for asynchronous logging to complete.
+        time.sleep(2)
+
+        final_current, _ = tracemalloc.get_traced_memory()
+        total_memory_increase = final_current - initial_current
+
+        self.assertTrue(
+            total_memory_increase < allowed_increase,
+            f"Total memory usage increased by {total_memory_increase} bytes, which exceeds the allowed threshold."
+        )
+        tracemalloc.stop()
+
+    def test_custom_timezone_log(self):
+        common_test_setup()
+
+        os.environ['LOGSEG_TIMEZONE'] = 'America/New_York'
+
+        self.logger_manager = logger_init()
+
+        logger = get_logger(__name__)
+
+        # Log the current time
+        current_time = datetime.datetime.now(datetime.timezone.utc)
+        logger.info(f'test log at {current_time}')
+
+        time.sleep(1)
+
+        with open('tests/data/logs/logs.log', 'r') as f:
+            content = f.readlines()
+            content_len = len(content)
+            assert content_len == 1, f"Only 1 log should be in log file. Found {content_len}.\n{content}"
+
+            log_entry = content[0]
+            assert 'INFO > test log' in log_entry, f"Log content is not as expected.\n{content}"
+
+            # Extract the timestamp from the log entry
+            log_time_str = log_entry.split('INFO > test log at ')[0].strip().removesuffix(":")
+            log_time = datetime.datetime.fromisoformat(log_time_str).__str__()
+
+            # Convert the log time to the expected timezone
+            expected_time = current_time.astimezone(
+                ZoneInfo('America/New_York')
+            ).strftime('%Y-%m-%d %H:%M:%S.%f') # Use ZoneInfo to handle DST correctly
+
+            # Note we ignore the last 3 digits to account for rounding differences
+            assert log_time[:-3] == expected_time[:-3], f"Log time {log_time} does not match expected time {expected_time}."
 
 # ---- test_multiprocessing_logger_and_redirects helpers ---- #
 
@@ -117,12 +191,16 @@ def _multiprocessing_logger_and_redirects_helper(sequential_logger):
         sequential_logger.info(f'sequential logger: {i}')
 
     # Start up new threads for the two inbound queues.
-    t1 = Thread(target=_multiprocessing_logger_and_redirects_threading_helper,
-                args=(1, iterable),
-                daemon=False)
-    t2 = Thread(target=_multiprocessing_logger_and_redirects_threading_helper,
-                args=(2, iterable),
-                daemon=False)
+    t1 = Thread(
+        target=_multiprocessing_logger_and_redirects_threading_helper,
+        args=(1, iterable),
+        daemon=False
+    )
+    t2 = Thread(
+        target=_multiprocessing_logger_and_redirects_threading_helper,
+        args=(2, iterable),
+        daemon=False
+    )
     t1.start()
     t2.start()
 
@@ -136,10 +214,14 @@ def _multiprocessing_logger_and_redirects_threading_helper(thread_num: int, iter
 
     thread_logger.info(f'LOGSEG(thread_{thread_num})Thread {thread_num} started')
     pool = mp.Pool(processes=mp.cpu_count())
-    pool.map(func=partial(_multiprocessing_logger_and_redirects_multiprocessing_helper,
-                          thread_num=thread_num,
-                          logger_queue=logseg.globals.logger_queue),
-             iterable=iterable)
+    pool.map(
+        func=partial(
+            _multiprocessing_logger_and_redirects_multiprocessing_helper,
+            thread_num=thread_num,
+            logger_queue=logseg.globals.logger_queue
+        ),
+        iterable=iterable
+    )
     pool.close()
     pool.join()
 
@@ -161,10 +243,14 @@ def _multiprocessing_logger_file_rotation_helper():
 
     processes = []
     for i in range(2):
-        processes.append(mp.Process(target=partial(_multiprocessing_logger_file_rotation_process_helper,
-                                                   process_num=i,
-                                                   print_time=print_time,
-                                                   logger_queue=logseg.globals.logger_queue)))
+        processes.append(mp.Process(
+            target=partial(
+                _multiprocessing_logger_file_rotation_process_helper,
+                process_num=i,
+                print_time=print_time,
+                logger_queue=logseg.globals.logger_queue
+            )
+        ))
     # Start the processes.
     for process in processes:
         process.start()
