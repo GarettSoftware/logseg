@@ -24,6 +24,7 @@ docs/build
 
 # Build
 dist
+build
 
 # Release
 logseg.egg-info
