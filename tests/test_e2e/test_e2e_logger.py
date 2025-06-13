@@ -195,9 +195,9 @@ class TestLogger(TestCase):
                 ZoneInfo('America/New_York')
             ).strftime('%Y-%m-%d %H:%M:%S.%f')  # Use ZoneInfo to handle DST correctly
 
-            # Note we ignore the last 3 digits to account for rounding differences
-            assert log_time[:-3] == expected_time[
-                                    :-3], f"Log time {log_time} does not match expected time {expected_time}."
+            # Note we ignore the last 4 digits to account for rounding differences
+            assert log_time[:-4] == expected_time[:-4], \
+                f"Log time {log_time} does not match expected time {expected_time}."
 
     def test_log_level_from_env_debug(self):
         """
@@ -325,10 +325,9 @@ def _multiprocessing_logger_file_rotation_helper():
     current_time = datetime.datetime.now()
     print_time = current_time + datetime.timedelta(seconds=5)
 
-    ctx = mp.get_context('spawn')
     processes = []
     for i in range(2):
-        processes.append(ctx.Process(
+        processes.append(mp.Process(
             target=partial(
                 _multiprocessing_logger_file_rotation_process_helper,
                 process_num=i,

@@ -2,8 +2,6 @@ import re
 import sys
 import logging
 
-import logseg.globals
-
 import logging.handlers
 
 from pathlib import Path
@@ -22,9 +20,12 @@ from typing import Optional, Tuple, Union
 
 from logseg.configurations.config import get_config
 
-from multiprocessing import Queue, Manager, current_process
+from multiprocessing import Manager, current_process
+from multiprocessing.queues import Queue
 
 from logseg.utils import create_dir_if_not_exists, delete_dir_contents_if_exists
+
+import logseg.globals
 
 
 class LoggerManager:
@@ -355,7 +356,7 @@ def _lt(queue: Queue):
     This function acts as the thread that listens to the logger queue and sends queued logs to the logger instance.
 
     Args:
-        queue: A multiprocessing Queue, managed my a multiprocessing Manager.
+        queue: A multiprocessing Queue, managed by a multiprocessing Manager.
 
     Returns:
 

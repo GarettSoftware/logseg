@@ -31,7 +31,7 @@ setup(
             "sphinx-autobuild>=2021.3.14",
         ]
     },
-    python_requires=">=3.9.0",
+    python_requires=">=3.9.13",
     keywords="logging, multiprocessing, log segmentation, log rotation",
     classifiers=[
         "Development Status :: 4 - Beta",
