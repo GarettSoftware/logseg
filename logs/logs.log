@@ -1,7 +1,0 @@
-2025-06-13 04:38:32.004632:    INFO > Starting multiprocessing test
-2025-06-13 04:38:32.198326:    INFO > Worker 0 is processing
-2025-06-13 04:38:32.201326:    INFO > Worker 2 is processing
-2025-06-13 04:38:32.201326:    INFO > Worker 1 is processing
-2025-06-13 04:38:32.204327:    INFO > Worker 3 is processing
-2025-06-13 04:38:32.204327:    INFO > Worker 4 is processing
-2025-06-13 04:38:32.223327:    INFO > Results: [0, 1, 2, 3, 4]
