@@ -22,6 +22,7 @@ from tests.test_utils import common_test_setup, common_test_setup_w_logger, comm
 
 os.environ['LOGSEG_LOG_DIR'] = 'tests/data/logs'
 
+
 class TestLogger(TestCase):
     """
     This class is responsible for testing the logger for concurrency issues.
@@ -192,10 +193,11 @@ class TestLogger(TestCase):
             # Convert the log time to the expected timezone
             expected_time = current_time.astimezone(
                 ZoneInfo('America/New_York')
-            ).strftime('%Y-%m-%d %H:%M:%S.%f') # Use ZoneInfo to handle DST correctly
+            ).strftime('%Y-%m-%d %H:%M:%S.%f')  # Use ZoneInfo to handle DST correctly
 
             # Note we ignore the last 3 digits to account for rounding differences
-            assert log_time[:-3] == expected_time[:-3], f"Log time {log_time} does not match expected time {expected_time}."
+            assert log_time[:-3] == expected_time[
+                                    :-3], f"Log time {log_time} does not match expected time {expected_time}."
 
     def test_log_level_from_env_debug(self):
         """
@@ -262,6 +264,7 @@ class TestLogger(TestCase):
             assert len(warning_messages) == 1, "WARNING message should be in logs when level is WARNING"
             assert len(error_messages) == 1, "ERROR message should be in logs when level is WARNING"
 
+
 # ---- test_multiprocessing_logger_and_redirects helpers ---- #
 
 def _multiprocessing_logger_and_redirects_helper(sequential_logger):
@@ -294,13 +297,17 @@ def _multiprocessing_logger_and_redirects_threading_helper(thread_num: int, iter
 
     thread_logger.info(f'LOGSEG(thread_{thread_num})Thread {thread_num} started')
 
-    # Instead of creating a pool in the thread, process each item directly
-    for i in iterable:
-        _multiprocessing_logger_and_redirects_multiprocessing_helper(
-            i=i,
+    pool = mp.Pool(processes=mp.cpu_count())
+    pool.map(
+        func=partial(
+            _multiprocessing_logger_and_redirects_multiprocessing_helper,
             thread_num=thread_num,
             logger_queue=logseg.globals.logger_queue
-        )
+        ),
+        iterable=iterable
+    )
+    pool.close()
+    pool.join()
 
 
 def _multiprocessing_logger_and_redirects_multiprocessing_helper(i: int, thread_num: int, logger_queue: Queue):

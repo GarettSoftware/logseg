@@ -1,6 +1,7 @@
-from multiprocessing import Queue
+from typing import Optional, TYPE_CHECKING
 
-from typing import Optional
+if TYPE_CHECKING:
+    from multiprocessing import Queue
 
 # Global variable is set in logger_init() of log package
-logger_queue: Optional[Queue] = None
+logger_queue: Optional['Queue'] = None
