@@ -1,6 +1,14 @@
 from setuptools import setup, find_packages
 
-from logseg.project_metadata import NAME, VERSION, DESCRIPTION, LONG_DESCRIPTION, AUTHOR
+# Define metadata directly in setup.py to avoid circular import issues
+NAME = "logseg"
+VERSION = "0.3.0"
+AUTHOR = "Garett MacGowan"
+DESCRIPTION = "Python logging for multi-process and multi-threaded applications."
+LONG_DESCRIPTION = (
+    "Multiprocessing focused Python logger with easy-to-use log file segmentation for a better multiprocessing logging "
+    "experience."
+)
 
 setup(
     name=NAME,
