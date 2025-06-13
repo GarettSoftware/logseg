@@ -4,6 +4,7 @@
 *.pyd
 __pycache__
 
+# Log files
 *.log
 
 # Virtual environments
