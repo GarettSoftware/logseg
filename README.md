@@ -121,6 +121,8 @@ log_dir = logs
 max_bytes = 10000000
 backup_count = 6
 pre_purge = true
+timezone = UTC
+log_level = INFO
 ```
 
 #### Environment Variable Overrides
@@ -151,3 +153,22 @@ _Pre Purge_
 Whether to purge the log directory on startup.
 
 `LOGSEG_PRE_PURGE = true`
+
+_Time Zone_
+
+The timezone to use for the logger.
+
+`LOGSEG_TIMEZONE = UTC`
+
+_Log Level_
+
+The log level to use for the logger.
+
+One of:
+- DEBUG
+- INFO
+- WARNING
+- ERROR
+- CRITICAL
+
+`LOGSEG_LOG_LEVEL = INFO`
