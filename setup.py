@@ -1,21 +1,23 @@
+import os
+
 from setuptools import setup, find_packages
 
-# Define metadata directly in setup.py to avoid circular import issues
-NAME = "logseg"
-VERSION = "0.3.0"
-AUTHOR = "Garett MacGowan"
-DESCRIPTION = "Python logging for multi-process and multi-threaded applications."
-LONG_DESCRIPTION = (
-    "Multiprocessing focused Python logger with easy-to-use log file segmentation for a better multiprocessing logging "
-    "experience."
-)
+# Define an empty dictionary to store the extracted constants
+metadata = {}
+
+# Create the full path to 'project_metadata.py'
+metadata_file_path = os.path.join(os.getcwd(), 'logseg/project_metadata.py')
+
+# Execute the 'project_metadata.py' file and capture the defined constants
+with open(metadata_file_path) as metadata_file:
+    exec(compile(metadata_file.read(), metadata_file_path, 'exec'), metadata)
 
 setup(
-    name=NAME,
-    version=VERSION,
-    description=DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
-    author=AUTHOR,
+    name=metadata.get("NAME"),
+    version=metadata.get("VERSION"),
+    description=metadata.get("DESCRIPTION"),
+    long_description=metadata.get("LONG_DESCRIPTION"),
+    author=metadata.get("AUTHOR"),
     author_email="garettsoftware@gmail.com",
     license="MIT",
     packages=find_packages(exclude=["tests", "tests.*"]),
