@@ -118,8 +118,8 @@ class CreateFileHandlerHandler(logging.Handler):
         super().__init__()
         self.config = config
 
-        self.segregate_regex = re.compile('(LOGSEG\(.*?\))')
-        self.seg_name_regex = re.compile('(?<=\()(.*)(?=\))')
+        self.segregate_regex = re.compile(r'(LOGSEG\(.*?\))')
+        self.seg_name_regex = re.compile(r'(?<=\()(.*)(?=\))')
 
     def _process_logseg(self, log_str: str) -> Tuple[str, str]:
         """
