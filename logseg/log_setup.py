@@ -260,15 +260,38 @@ def _get_log_formatter(config: ConfigParser):
     return formatter
 
 
-def _get_root_logger():
+def _get_root_logger(config: ConfigParser = None):
     """
-    This function gets the root logger and sets its level.
+    This function gets the root logger and sets its level based on configuration.
+
+    Args:
+        config: A ConfigParser containing the logger configuration. If None, the default config will be used.
 
     Returns:
-
+        The root logger with the configured log level.
     """
     root = logging.getLogger()
-    root.setLevel(logging.INFO)
+
+    # If config is not provided, get the default config
+    if config is None:
+        config = get_config()
+
+    # Get log level from config, default to INFO if not specified or invalid
+    log_level_str = config.get('LOGSEG', 'log_level', fallback='INFO').upper()
+
+    # Map string log level to logging module constants
+    log_level_map = {
+        'DEBUG': logging.DEBUG,
+        'INFO': logging.INFO,
+        'WARNING': logging.WARNING,
+        'ERROR': logging.ERROR,
+        'CRITICAL': logging.CRITICAL
+    }
+
+    # Set log level from config, default to INFO if not a valid level
+    log_level = log_level_map.get(log_level_str, logging.INFO)
+    root.setLevel(log_level)
+
     return root
 
 
@@ -303,8 +326,8 @@ def _configure_logging_handlers(config: ConfigParser) -> Logger:
 
     """
 
-    # Get the root logger.
-    root = _get_root_logger()
+    # Get the root logger with the configured log level.
+    root = _get_root_logger(config)
 
     # Define the formatter.
     log_formatter = _get_log_formatter(config)

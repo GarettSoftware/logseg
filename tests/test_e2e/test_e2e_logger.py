@@ -22,14 +22,29 @@ from tests.test_utils import common_test_setup, common_test_setup_w_logger, comm
 
 os.environ['LOGSEG_LOG_DIR'] = 'tests/data/logs'
 
-
 class TestLogger(TestCase):
     """
     This class is responsible for testing the logger for concurrency issues.
     """
 
     def tearDown(self) -> None:
+        # First clean up the logger to ensure all logs are written
         common_test_teardown_w_logger(logger_manager=self.logger_manager)
+
+        # Then reset any environment variables that might affect other tests
+        env_vars_to_reset = [
+            'LOGSEG_LOG_LEVEL',
+            'LOGSEG_MAX_BYTES',
+            'LOGSEG_BACKUP_COUNT',
+            'LOGSEG_PRE_PURGE',
+            'LOGSEG_TIMEZONE'
+        ]
+        for var in env_vars_to_reset:
+            if var in os.environ:
+                del os.environ[var]
+
+        # Reset LOGSEG_LOG_DIR to its original value
+        os.environ['LOGSEG_LOG_DIR'] = 'tests/data/logs'
 
     def test_logger(self):
         self.logger_manager = common_test_setup_w_logger()
@@ -136,7 +151,7 @@ class TestLogger(TestCase):
                 )
 
         # Allow time for asynchronous logging to complete.
-        time.sleep(2)
+        time.sleep(1)
 
         final_current, _ = tracemalloc.get_traced_memory()
         total_memory_increase = final_current - initial_current
@@ -182,6 +197,68 @@ class TestLogger(TestCase):
             # Note we ignore the last 3 digits to account for rounding differences
             assert log_time[:-3] == expected_time[:-3], f"Log time {log_time} does not match expected time {expected_time}."
 
+    def test_log_level_from_env(self):
+        """
+        Test that the LOGSEG_LOG_LEVEL environment variable is used to set the log level.
+        """
+        common_test_setup()
+
+        # Set log level to DEBUG via environment variable
+        os.environ['LOGSEG_LOG_LEVEL'] = 'DEBUG'
+
+        self.logger_manager = logger_init()
+
+        logger = get_logger(__name__)
+
+        # Log messages at different levels
+        logger.debug('debug message')
+        logger.info('info message')
+        logger.warning('warning message')
+        logger.error('error message')
+
+        time.sleep(1)
+
+        with open('tests/data/logs/logs.log', 'r') as f:
+            content = f.readlines()
+
+            # Check that all log levels are present (DEBUG and above)
+            assert any('DEBUG > debug message' in line for line in content), "DEBUG message not found in logs"
+            assert any('INFO > info message' in line for line in content), "INFO message not found in logs"
+            assert any('WARNING > warning message' in line for line in content), "WARNING message not found in logs"
+            assert any('ERROR > error message' in line for line in content), "ERROR message not found in logs"
+
+        # Now test with WARNING level
+        common_test_teardown_w_logger(logger_manager=self.logger_manager)
+        common_test_setup()
+
+        os.environ['LOGSEG_LOG_LEVEL'] = 'WARNING'
+
+        self.logger_manager = logger_init()
+
+        logger = get_logger(__name__)
+
+        # Log messages at different levels
+        logger.debug('debug message')
+        logger.info('info message')
+        logger.warning('warning message')
+        logger.error('error message')
+
+        time.sleep(1)
+
+        with open('tests/data/logs/logs.log', 'r') as f:
+            content = f.readlines()
+
+            # Check that only WARNING and above are present
+            debug_messages = [line for line in content if 'DEBUG > debug message' in line]
+            info_messages = [line for line in content if 'INFO > info message' in line]
+            warning_messages = [line for line in content if 'WARNING > warning message' in line]
+            error_messages = [line for line in content if 'ERROR > error message' in line]
+
+            assert len(debug_messages) == 0, "DEBUG message should not be in logs when level is WARNING"
+            assert len(info_messages) == 0, "INFO message should not be in logs when level is WARNING"
+            assert len(warning_messages) == 1, "WARNING message should be in logs when level is WARNING"
+            assert len(error_messages) == 1, "ERROR message should be in logs when level is WARNING"
+
 # ---- test_multiprocessing_logger_and_redirects helpers ---- #
 
 def _multiprocessing_logger_and_redirects_helper(sequential_logger):
@@ -213,17 +290,14 @@ def _multiprocessing_logger_and_redirects_threading_helper(thread_num: int, iter
     thread_logger = get_logger(f'{__name__}_{thread_num}')
 
     thread_logger.info(f'LOGSEG(thread_{thread_num})Thread {thread_num} started')
-    pool = mp.Pool(processes=mp.cpu_count())
-    pool.map(
-        func=partial(
-            _multiprocessing_logger_and_redirects_multiprocessing_helper,
+
+    # Instead of creating a pool in the thread, process each item directly
+    for i in iterable:
+        _multiprocessing_logger_and_redirects_multiprocessing_helper(
+            i=i,
             thread_num=thread_num,
             logger_queue=logseg.globals.logger_queue
-        ),
-        iterable=iterable
-    )
-    pool.close()
-    pool.join()
+        )
 
 
 def _multiprocessing_logger_and_redirects_multiprocessing_helper(i: int, thread_num: int, logger_queue: Queue):
@@ -241,9 +315,10 @@ def _multiprocessing_logger_file_rotation_helper():
     current_time = datetime.datetime.now()
     print_time = current_time + datetime.timedelta(seconds=5)
 
+    ctx = mp.get_context('spawn')
     processes = []
     for i in range(2):
-        processes.append(mp.Process(
+        processes.append(ctx.Process(
             target=partial(
                 _multiprocessing_logger_file_rotation_process_helper,
                 process_num=i,
