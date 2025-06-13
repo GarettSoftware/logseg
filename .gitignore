@@ -4,6 +4,8 @@
 *.pyd
 __pycache__
 
+*.log
+
 # Virtual environments
 .venv
 .env
