@@ -197,9 +197,9 @@ class TestLogger(TestCase):
             # Note we ignore the last 3 digits to account for rounding differences
             assert log_time[:-3] == expected_time[:-3], f"Log time {log_time} does not match expected time {expected_time}."
 
-    def test_log_level_from_env(self):
+    def test_log_level_from_env_debug(self):
         """
-        Test that the LOGSEG_LOG_LEVEL environment variable is used to set the log level.
+        Test that the LOGSEG_LOG_LEVEL environment variable is used to set the log level to DEBUG.
         """
         common_test_setup()
 
@@ -227,10 +227,13 @@ class TestLogger(TestCase):
             assert any('WARNING > warning message' in line for line in content), "WARNING message not found in logs"
             assert any('ERROR > error message' in line for line in content), "ERROR message not found in logs"
 
-        # Now test with WARNING level
-        common_test_teardown_w_logger(logger_manager=self.logger_manager)
+    def test_log_level_from_env_warning(self):
+        """
+        Test that the LOGSEG_LOG_LEVEL environment variable is used to set the log level to WARNING.
+        """
         common_test_setup()
 
+        # Set log level to WARNING via environment variable
         os.environ['LOGSEG_LOG_LEVEL'] = 'WARNING'
 
         self.logger_manager = logger_init()
