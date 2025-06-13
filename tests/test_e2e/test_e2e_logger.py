@@ -28,6 +28,13 @@ class TestLogger(TestCase):
     This class is responsible for testing the logger for concurrency issues.
     """
 
+    def setUp(self):
+        try:
+            mp.set_start_method('spawn', force=True)
+        except RuntimeError:
+            # Start method already set, that's okay
+            pass
+
     def tearDown(self) -> None:
         # First clean up the logger to ensure all logs are written
         common_test_teardown_w_logger(logger_manager=self.logger_manager)
