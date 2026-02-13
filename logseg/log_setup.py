@@ -63,6 +63,11 @@ class LoggerManager:
         # Shutdown logging
         logging.shutdown()
 
+        # Shut down the multiprocessing Manager server process.
+        if logseg.globals.logger_manager is not None:
+            logseg.globals.logger_manager.shutdown()
+            logseg.globals.logger_manager = None
+
 
 class RedirectToLogger(object):
 
@@ -93,8 +98,9 @@ class RedirectToLogger(object):
         """
         self.value = message
         for line in message.rstrip().splitlines():
-            line = line.encode('utf-8', errors='replace')
-            self.logger.log(self.log_level, line.rstrip())
+            # Sanitize encoding issues from file/network data while keeping as string
+            safe_line = line.encode('utf-8', errors='replace').decode('utf-8')
+            self.logger.log(self.log_level, safe_line.rstrip())
 
     def flush(self):
         pass
@@ -393,7 +399,8 @@ def logger_init(config_file: Union[Path, str] = None) -> LoggerManager:
 
     create_dir_if_not_exists(logger_dir)
 
-    logseg.globals.logger_queue = Manager().Queue()
+    logseg.globals.logger_manager = Manager()
+    logseg.globals.logger_queue = logseg.globals.logger_manager.Queue()
 
     _configure_logging_handlers(config)
 
