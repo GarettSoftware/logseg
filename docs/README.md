@@ -2,7 +2,7 @@
 
 1) Install docs dependencies
     ```
-    pip install -e .[docs]
+    uv pip install -e .[docs]
     ```
 
 2) Run a local docs server
@@ -21,7 +21,7 @@ make html
 
 * Convert reStructuredText (.rst) to Markdown (.md)
     ```
-    pip install rst-to-myst[sphinx]
+    uv pip install rst-to-myst[sphinx]
     rst2myst convert docs/**/*.rst
     ```
 

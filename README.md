@@ -25,6 +25,12 @@ For full setup and configuration instructions, see below or read the
 [PyPi](https://pypi.org/project/logseg/)
 
 ```bash
+uv pip install logseg
+```
+
+or
+
+```bash
 pip install logseg
 ```
 

@@ -17,7 +17,7 @@ def common_test_setup():
 
 def common_test_teardown():
     # Change folder permissions and delete the directory.
-    os.chmod('tests/data', stat.S_IWUSR)
+    os.chmod('tests/data', stat.S_IRWXU)
     shutil.rmtree('tests/data')
 
 
